@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professional Stopwatch</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    height: 100vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+        url("stopwatch.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.app {
+    width: 400px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(30px);
+    border-radius: 28px;
+    padding: 35px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+.app h1 {
+    font-size: 26px;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+}
+
+.time {
+    font-size: 52px;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.start {
+    background: #22c55e;
+    color: #022c22;
+}
+
+.stop {
+    background: #ef4444;
+    color: white;
+}
+
+.lap {
+    background: #facc15;
+    color: #422006;
+}
+
+.reset {
+    background: #3b82f6;
+    color: white;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    opacity: 0.9;
+}
+
+.laps {
+    max-height: 230px;
+    overflow-y: auto;
+}
+
+.lap-row {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+    <h1>Stopwatch</h1>
+    <div class="time" id="display">00:00:00</div>
+
+    <div class="controls">
+        <button id="startStop" class="start">Start</button>
+        <button id="lap" class="lap">Lap</button>
+        <button id="reset" class="reset">Reset</button>
+    </div>
+
+    <div class="laps" id="laps"></div>
+</div>
+
+<script>
+let startTime = 0
+let elapsed = 0
+let interval = null
+let running = false
+let lastLapTime = 0
+let lapCount = 1
+
+function format(t) {
+    let ms = Math.floor((t % 1000) / 10)
+    let s = Math.floor((t / 1000) % 60)
+    let m = Math.floor((t / 60000) % 60)
+    return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")+":"+String(ms).padStart(2,"0")
+}
+
+function update() {
+    elapsed = Date.now() - startTime
+    display.textContent = format(elapsed)
+}
+
+startStop.onclick = () => {
+    if (!running) {
+        startTime = Date.now() - elapsed
+        interval = setInterval(update, 10)
+        running = true
+        startStop.textContent = "Stop"
+        startStop.className = "stop"
+    } else {
+        clearInterval(interval)
+        running = false
+        startStop.textContent = "Start"
+        startStop.className = "start"
+    }
+}
+
+lap.onclick = () => {
+    if (!running) return
+    const lapTime = elapsed - lastLapTime
+    lastLapTime = elapsed
+    const row = document.createElement("div")
+    row.className = "lap-row"
+    row.innerHTML = `<span>Lap ${lapCount++}</span><span>${format(lapTime)}</span>`
+    laps.prepend(row)
+}
+
+reset.onclick = () => {
+    clearInterval(interval)
+    elapsed = 0
+    lastLapTime = 0
+    lapCount = 1
+    running = false
+    display.textContent = "00:00:00"
+    laps.innerHTML = ""
+    startStop.textContent = "Start"
+    startStop.className = "start"
+}
+</script>
+
+</body>
+</html>
